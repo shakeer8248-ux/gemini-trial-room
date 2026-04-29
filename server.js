@@ -29,7 +29,7 @@ app.post('/api/generate', upload.fields([{ name: 'person' }, { name: 'garment' }
         // Note: For true multi-image blending, prompt tuning is required. 
         // This demonstrates the core connection.
         const response = await ai.models.generateImages({
-            model: 'gemini-3.1-flash-image',
+            model: 'gemini-3.1-flash-image-preview',
             prompt: "A hyper-realistic, high-fidelity fashion photography shot of a person wearing a stylish outfit.",
             numberOfImages: 1,
             outputMimeType: "image/jpeg"
