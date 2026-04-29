@@ -21,27 +21,36 @@ app.post('/api/generate', upload.fields([{ name: 'person' }, { name: 'garment' }
         const personImage = req.files['person'][0];
         const garmentImage = req.files['garment'][0];
 
+        // 1. Convert the uploaded photos into base64 format so Google can read them
+        const personBase64 = fs.readFileSync(personImage.path).toString('base64');
+        const garmentBase64 = fs.readFileSync(garmentImage.path).toString('base64');
+
         // Clean up mobile uploads immediately
         fs.unlinkSync(personImage.path);
         fs.unlinkSync(garmentImage.path);
 
-        // Call the Gemini Image Generation API
-        // Note: For true multi-image blending, prompt tuning is required. 
-        // This demonstrates the core connection.
-                  const response = await ai.models.generateImages({
-         model: 'imagen-3.0-generate-001',
-         prompt: "A hyper-realistic, high-fidelity fashion photography shot of a person wearing a stylish outfit.",
-         config: {
-             numberOfImages: 1,
-             outputMimeType: "image/jpeg"
-         }
-     });
-        
-        
+        // 2. Call generateContent with the correct multimodal setup
+        const response = await ai.models.generateContent({
+            model: 'gemini-3.1-flash-image-preview',
+            config: { 
+                responseModalities: ['IMAGE'] // This forces the model to draw an image instead of writing text
+            },
+            contents: [
+                {
+                    role: 'user',
+                    parts: [
+                        { text: "Combine this person and this clothing item into one hyper-realistic, high-fidelity fashion photography shot." },
+                        { inlineData: { data: personBase64, mimeType: personImage.mimetype } },
+                        { inlineData: { data: garmentBase64, mimeType: garmentImage.mimetype } }
+                    ]
+                }
+            ]
+        });
 
-        // Gemini returns the image as base64 data
-        const base64Image = response.generatedImages[0].image.imageBytes;
-        const imageUrl = `data:image/jpeg;base64,${base64Image}`;
+        // 3. Extract the image from Google's response
+        const generatedImageData = response.candidates[0].content.parts[0].inlineData.data;
+        const mimeType = response.candidates[0].content.parts[0].inlineData.mimeType || 'image/jpeg';
+        const imageUrl = `data:${mimeType};base64,${generatedImageData}`;
 
         res.json({ success: true, imageUrl: imageUrl });
 
