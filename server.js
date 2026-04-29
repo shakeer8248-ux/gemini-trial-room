@@ -28,12 +28,15 @@ app.post('/api/generate', upload.fields([{ name: 'person' }, { name: 'garment' }
         // Call the Gemini Image Generation API
         // Note: For true multi-image blending, prompt tuning is required. 
         // This demonstrates the core connection.
-             const response = await ai.models.generateImages({
-         model: 'gemini-3.1-flash-image-preview',
+                  const response = await ai.models.generateImages({
+         model: 'imagen-3.0-generate-001',
          prompt: "A hyper-realistic, high-fidelity fashion photography shot of a person wearing a stylish outfit.",
-         numberOfImages: 1,
-         outputMimeType: "image/jpeg"
+         config: {
+             numberOfImages: 1,
+             outputMimeType: "image/jpeg"
+         }
      });
+        
         
 
         // Gemini returns the image as base64 data
