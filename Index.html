@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini AI Trial Room</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f4f4f9; margin: 0; }
+        .upload-container { margin: 15px auto; padding: 15px; border: 2px dashed #aaa; border-radius: 10px; background: white; max-width: 90%; }
+        img { max-width: 100%; margin-top: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        button { padding: 15px 30px; font-size: 18px; cursor: pointer; background: #4285F4; color: #fff; border: none; border-radius: 8px; width: 90%; margin-top: 10px; font-weight: bold;}
+        input[type="file"] { margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <h2>Gemini Powered Trial Room ✨</h2>
+
+    <div class="upload-container">
+        <h3>1. Your Photo</h3>
+        <input type="file" id="personInput" accept="image/*">
+    </div>
+
+    <div class="upload-container">
+        <h3>2. The Outfit</h3>
+        <input type="file" id="garmentInput" accept="image/*">
+    </div>
+
+    <button id="tryNowBtn">Generate with Gemini</button>
+
+    <div id="resultContainer">
+        <h4 id="loadingText" style="display: none; color: #555;">Connecting to Google AI...</h4>
+        <img id="resultImage" style="display: none;" alt="Generated Try-On">
+    </div>
+
+    <script>
+        document.getElementById('tryNowBtn').addEventListener('click', async () => {
+            const personFile = document.getElementById('personInput').files[0];
+            const garmentFile = document.getElementById('garmentInput').files[0];
+
+            if (!personFile || !garmentFile) {
+                alert("Please select both images!");
+                return;
+            }
+
+            document.getElementById('loadingText').style.display = 'block';
+            document.getElementById('resultImage').style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('person', personFile);
+            formData.append('garment', garmentFile);
+
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('resultImage').src = data.imageUrl;
+                    document.getElementById('resultImage').style.display = 'block';
+                } else {
+                    alert("Generation failed. Try again.");
+                }
+            } catch (error) {
+                alert("Server error.");
+            } finally {
+                document.getElementById('loadingText').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
